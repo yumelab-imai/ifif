@@ -7,4 +7,12 @@ $ docker compose exec app bash
 # root@0e8d8ab6688f:/var/www/html# npm -v
 <!-- コマンドの末尾の.はカレントディレクトリの意 -->
 composer create-project --prefer-dist "laravel/laravel=10.*" .
+
+$php artisan key:generate
+$npm install
+$npm run dev
+
+
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
 ```

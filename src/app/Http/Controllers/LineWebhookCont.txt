@@ -1,0 +1,125 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\CommonConstants;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use LINE\Clients\MessagingApi\Model\ReplyMessageRequest;
+use LINE\Clients\MessagingApi\Model\TextMessage;
+use LINE\Clients\MessagingApi\Model\UserProfileResponse;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Encryption\DecryptException;
+
+use App\Models\LineInfo;
+use App\Models\Manager;
+use App\Models\UserQuizState;
+use App\Models\Question;
+use App\Models\Answer;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use LINE\Clients\MessagingApi\Api\MessagingApiApi;
+use LINE\Clients\MessagingApi\Configuration;
+use Illuminate\Support\Facades\Crypt;
+
+
+use LINE\LINEBot;
+use LINE\LINEBot\HTTPClient\CurlHTTPClient;
+use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
+// use LINE\LINEBot\MessageBuilder\MultiMessageBuilder;
+// use LINE\LINEBot\MessageBuilder\TemplateBuilder\ButtonTemplateBuilder;
+// use LINE\LINEBot\MessageBuilder\TemplateBuilder\CarouselColumnTemplateBuilder;
+// use LINE\LINEBot\MessageBuilder\TemplateBuilder\CarouselTemplateBuilder;
+// use LINE\LINEBot\MessageBuilder\TemplateBuilder\ConfirmTemplateBuilder;
+// use LINE\LINEBot\MessageBuilder\TemplateMessageBuilder;
+// use LINE\LINEBot\TemplateActionBuilder\DatetimePickerTemplateActionBuilder;
+// use LINE\LINEBot\TemplateActionBuilder\PostbackTemplateActionBuilder;
+// use LINE\LINEBot\TemplateActionBuilder\UriTemplateActionBuilder;
+
+// use LINE\Clients\MessagingApi\Model\ReplyMessageRequest;
+// use LINE\Clients\MessagingApi\Model\TextMessage;
+use LINE\Constants\HTTPHeader;
+use LINE\Parser\EventRequestParser;
+use LINE\Webhook\Model\MessageEvent;
+use LINE\Parser\Exception\InvalidEventRequestException;
+use LINE\Parser\Exception\InvalidSignatureException;
+use LINE\Webhook\Model\TextMessageContent;
+
+
+class LineWebhookController extends Controller
+{
+    // メイン機能
+    public function __invoke(Request $request): \Illuminate\Http\Response
+    {
+        $replyToken = null;
+
+        $events = $request->input('events', []);
+        foreach ($events as $event) {
+            if (isset($event['replyToken'])) {
+                $replyToken = $event['replyToken'];
+                break;
+            }
+        }
+
+        if (!$replyToken) {
+            return $this->sendErrorResponse('No replyToken found');
+        }
+
+        $encrypted_manager_id = $request->query("manager_id");
+        if (empty($encrypted_manager_id)) {
+            return $this->sendErrorResponse('マネージャーIDがないのでおかしいです。');
+        }
+
+        try {
+            $manager_id = Crypt::decryptString($encrypted_manager_id);
+        } catch (DecryptException $e) {
+            return $this->sendErrorResponse('Failed to decrypt manager ID: ' . $e->getMessage());
+        }
+
+        $manager = Manager::find($manager_id);
+        if (!$manager) {
+            return $this->sendErrorResponse('該当するマネージャーが見当たりません。');
+        } elseif (empty($manager->channel_token) || empty($manager->channel_secret)) {
+            // $manager
+            Log::debug("debug");
+            Log::debug($manager);
+            return $this->sendErrorResponse('マネージャーの設定情報が不足しています。');
+        }
+
+        $channel_token = Crypt::decryptString($manager->channel_token);
+        $channel_secret = Crypt::decryptString($manager->channel_secret);
+        // $httpClient = new CurlHTTPClient($channel_token);
+        // $bot = new LINEBot($httpClient, ['channelSecret' => $channel_secret]);
+
+        foreach ($events as $event) {
+            $event = json_decode(json_encode($event));
+            switch ($event->type) {
+                case "message":
+                    if ($event->message->type == "text") {
+                        $eventReplyToken = $event->replyToken;
+                        $receivedMessage = $event->message->text;
+
+                        $textMessageBuilder = new TextMessageBuilder($receivedMessage);
+                        $response = $bot->replyMessage($eventReplyToken, $textMessageBuilder);
+
+                        if (!$response->isSucceeded()) {
+                            Log::error("Failed to reply message: " . $response->getHTTPStatus() . " " . $response->getRawBody());
+                        }
+                    }
+                    break;
+                // 他のイベントタイプの場合の処理（必要に応じて）
+                // case "xxxx":
+                //     break;
+            }
+        }
+
+        return response('OK', 200);
+    }
+
+    private function sendErrorResponse(string $message): \Illuminate\Http\Response
+    {
+        Log::error($message);
+        return response('Error', 400);
+    }
+}

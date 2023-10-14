@@ -4,8 +4,8 @@ FROM php:8.2-fpm
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # install Node.js
-COPY --from=node:10.22 /usr/local/bin /usr/local/bin
-COPY --from=node:10.22 /usr/local/lib /usr/local/lib
+COPY --from=node:latest /usr/local/bin /usr/local/bin
+COPY --from=node:latest /usr/local/lib /usr/local/lib
 
 RUN apt-get update && \
     apt-get -y install \

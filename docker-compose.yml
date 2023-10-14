@@ -10,13 +10,9 @@ services:
       dockerfile: ./docker/php/Dockerfile
     volumes:
       - ./src/:/var/www/html
-    # environment:
-    #   - DB_CONNECTION=mysql
-    #   - DB_HOST=db
-    #   - DB_PORT=3306
-    #   - DB_DATABASE=${DB_NAME}
-    #   - DB_USERNAME=${DB_USER}
-    #   - DB_PASSWORD=${DB_PASSWORD}
+      - /etc/ssl/cert.pem:/etc/ssl/cert.pem
+    environment:
+      - MYSQL_ATTR_SSL_CA=${PS_MYSQL_CA_CERT_PATH}
 
   web:
     build:
