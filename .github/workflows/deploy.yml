@@ -5,11 +5,10 @@ on:
     branches:
       - main
 jobs:
-  deploy:
+   Deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
       uses: actions/checkout@v2
 
     - name: Deploy to EC2
@@ -21,6 +20,7 @@ jobs:
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
         echo "User: $USER"
+        echo "User: $PRIVATE_KEY"
         echo "Host: $HOST"
         echo "Project Name: $PROJECT_NAME"
         ssh -v -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "cd $PROJECT_NAME && git pull"
