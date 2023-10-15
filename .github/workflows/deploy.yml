@@ -20,9 +20,5 @@ jobs:
       run: |
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
-        echo "User: $USER"
-        echo "User: $PRIVATE_KEY"
-        echo "Host: $HOST"
-        echo "Project Name: $PROJECT_NAME"
         echo "Project Name:  ${{ secrets.PROJECT_NAME }} "
         ssh -v -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.$USER }}@${{ secrets.$HOST }} "cd ${{ secrets.PROJECT_NAME }} && git pull"
