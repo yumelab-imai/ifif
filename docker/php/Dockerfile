@@ -1,5 +1,13 @@
 FROM php:8.2-fpm
 
+# ユーザーとグループのIDを指定
+# ※ Linuxの一般ユーザーのデフォルトのID
+ARG UID=1000
+ARG GID=1000
+
+# www-data ユーザーのUIDとGIDを変更
+RUN usermod -u $UID www-data && groupmod -g $GID www-data
+
 # Composer install
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

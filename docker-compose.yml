@@ -8,11 +8,15 @@ services:
     build:
       context: .
       dockerfile: ./docker/php/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     volumes:
       - ./src/:/var/www/html
       - /etc/ssl/cert.pem:/etc/ssl/cert.pem
     environment:
       - MYSQL_ATTR_SSL_CA=${PS_MYSQL_CA_CERT_PATH}
+    user: www-data
 
   web:
     build:
