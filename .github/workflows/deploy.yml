@@ -15,9 +15,9 @@ jobs:
     - name: Deploy to EC2
       env:
         PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        # HOST: ${{ secrets.EC2_HOST }}
-        # USER: ${{ secrets.EC2_USER }}
+        HOST: ${{ secrets.EC2_HOST }}
+        USER: ${{ secrets.EC2_USER }}
       run: |
-        echo "${{ secrets.PRIVATE_KEY }}" > private_key.pem
+        echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
-        ssh -v -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.USER }}@${{ secrets.HOST }} "cd ${{ secrets.PROJECT_NAME }} && git pull"
+        ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "cd ${{ secrets.PROJECT_NAME }} && git pull"
