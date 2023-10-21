@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\ManagerController;
 use App\Http\Controllers\Manager\LineInfoController;
 use App\Http\Controllers\Manager\QuestionController;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,3 +87,13 @@ Route::post(
     "/line/webhook/message",
     "App\Http\Controllers\LineWebhookController@message"
 )->name("line.webhook.message");
+
+
+Route::get('/test-database', function () {
+    try {
+        DB::connection()->getPdo();
+        print_r("Connected successfully to: " . DB::connection()->getDatabaseName());
+    } catch (\Exception $e) {
+        die("Could not connect to the database.  Please check your configuration. Error:" . $e );
+    }
+});

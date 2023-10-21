@@ -14,7 +14,7 @@ $ sudo docker-compose exec app bash
 <!-- コマンドの末尾の.はカレントディレクトリの意 -->
 composer create-project --prefer-dist "laravel/laravel=10.*" .
 
-$php artisan key:generate
+# $php artisan key:generate 
 $npm install
 $npm run dev
 
