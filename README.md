@@ -21,4 +21,7 @@ $npm run dev
 
 npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p
+
+
+docker-compose exec -u root app bash
 ```
