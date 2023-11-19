@@ -17,4 +17,4 @@ rcl:
 	php artisan route:clear
 
 app:
-	docker-compose exec app bash
+	docker-compose exec -u root app bash
